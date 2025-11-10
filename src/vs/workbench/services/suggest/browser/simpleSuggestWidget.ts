@@ -704,7 +704,6 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
 		// 	return;
 		// }
 
-		const bodyBox = dom.getClientArea(this._container.ownerDocument.body);
 		const info = this._getLayoutInfo();
 
 		if (!size) {
@@ -731,7 +730,8 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
 		// showing items
 
 		// width math
-		const maxWidth = bodyBox.width - info.borderHeight - 2 * info.horizontalPadding;
+		const containerBox = dom.getClientArea(this._container);
+		const maxWidth = containerBox.width - info.borderHeight - 2 * info.horizontalPadding;
 		if (width > maxWidth) {
 			width = maxWidth;
 		}
@@ -745,7 +745,8 @@ export class SimpleSuggestWidget<TModel extends SimpleCompletionModel<TItem>, TI
 		const editorBox = dom.getDomNodePagePosition(this._container);
 		const cursorBox = this._cursorPosition; //this.editor.getScrolledVisiblePosition(this.editor.getPosition());
 		const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
-		const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
+		const containerBottom = editorBox.top + editorBox.height;
+		const maxHeightBelow = Math.min(containerBottom - cursorBottom - info.verticalPadding, fullHeight);
 		const availableSpaceAbove = editorBox.top + cursorBox.top - info.verticalPadding;
 		const maxHeightAbove = Math.min(availableSpaceAbove, fullHeight);
 		let maxHeight = Math.min(Math.max(maxHeightAbove, maxHeightBelow) + info.borderHeight, fullHeight);
