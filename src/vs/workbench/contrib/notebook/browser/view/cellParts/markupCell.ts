@@ -31,6 +31,7 @@ import { CellEditorOptions } from './cellEditorOptions.js';
 import { collapsedCellTTPolicy, MarkdownCellRenderTemplate } from '../notebookRenderingCommon.js';
 import { MarkupCellViewModel } from '../../viewModel/markupCellViewModel.js';
 import { WordHighlighterContribution } from '../../../../../../editor/contrib/wordHighlighter/browser/wordHighlighter.js';
+import { INotebookLoggingService } from '../../../common/notebookLoggingService.js';
 
 export class MarkupCell extends Disposable {
 
@@ -58,6 +59,7 @@ export class MarkupCell extends Disposable {
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IConfigurationService private configurationService: IConfigurationService,
 		@IKeybindingService private keybindingService: IKeybindingService,
+		@INotebookLoggingService private logger: INotebookLoggingService
 	) {
 		super();
 
@@ -416,21 +418,31 @@ export class MarkupCell extends Disposable {
 	}
 
 	private focusEditorIfNeeded() {
-		if (this.viewCell.focusMode === CellFocusMode.Editor &&
-			(this.notebookEditor.hasEditorFocus() || this.notebookEditor.getDomNode().ownerDocument.activeElement === this.notebookEditor.getDomNode().ownerDocument.body)
+		const editorFocus = this.viewCell.focusMode === CellFocusMode.Editor;
+		const hasFocus = this.notebookEditor.hasEditorFocus();
+		const activeElement = this.notebookEditor.getDomNode().ownerDocument.activeElement;
+
+		if (editorFocus &&
+			(hasFocus || activeElement === this.notebookEditor.getDomNode().ownerDocument.body)
 		) { // Don't steal focus from other workbench parts, but if body has focus, we can take it
 			if (!this.editor) {
+				this.logger.info('markup cell focus', 'no editor, returning');
 				return;
 			}
 
+			this.logger.info('markup cell focus', 'setting focus');
 			this.editor.focus();
 
 			const primarySelection = this.editor.getSelection();
 			if (!primarySelection) {
+				this.logger.info('markup cell focus', 'no selection, returning');
 				return;
 			}
 
+			this.logger.info('markup cell focus', 'revealing range');
 			this.notebookEditor.revealRangeInViewAsync(this.viewCell, primarySelection);
+		} else {
+			this.logger.info('markup cell focus', `not setting focus, should focus: ${editorFocus}, has focus: ${hasFocus}, active classlist ${String(activeElement?.classList)}`);
 		}
 	}
 

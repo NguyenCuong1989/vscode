@@ -2422,7 +2422,7 @@ export class NotebookEditorWidget extends Disposable implements INotebookEditorD
 		}
 
 		cell.focusedOutputId = undefined;
-
+		this.logService.info('editor widget', `focus notebook cell ${focusItem}`);
 		if (focusItem === 'editor') {
 			cell.isInputCollapsed = false;
 			this.focusElement(cell);
